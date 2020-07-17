@@ -3,7 +3,7 @@ build: build-omni
 PROJECT_NAME_APP := omni-app
 
 build-omni:
-	cd omni-app
+	cd omni-app && make all
 	docker-compose -f docker-compose.yml build ${PROJECT_NAME_APP}
 	docker-compose -f docker-compose.yml up -d
 	docker-compose -f docker-compose.yml exec ${PROJECT_NAME_APP} composer install
