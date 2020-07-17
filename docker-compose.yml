@@ -1,0 +1,76 @@
+version: "3.8"
+
+services:
+
+  #############
+  # Databases #
+  #############
+
+  omni-db:
+    image: postgres:11
+    container_name: omni-db
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - ./volumes/db/omni-db:/var/lib/postgresql/data
+    ports:
+      - ${DB_PUBLIC_PORT}
+    networks:
+      - omni-net
+
+  ################
+  # Backend #
+  ################
+
+  omni-app:
+    build:
+      args:
+        user: ${ARG_USER}
+        uid: ${ARG_UID}
+      context: omni-app
+      dockerfile: Dockerfile
+    container_name: omni-app
+    restart: always
+    environment:
+      APP_NAME: ${APP_NAME}
+      APP_HOST: ${APP_HOST}
+      APP_ENV: ${APP_ENV}
+      APP_KEY: ${APP_KEY}
+      APP_DEBUG: ${APP_DEBUG}
+      APP_URL: ${APP_URL}
+      DB_CONNECTION: ${DB_CONNECTION}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_NAME}
+      DB_USERNAME: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      PHP_IDE_CONFIG: ${PHP_IDE_CONFIG}
+      XDEBUG_CONFIG: ${XDEBUG_CONFIG}
+    depends_on:
+      - omni-db
+    volumes:
+      - ./omni-app/www:/var/www
+      - ./omni-app/php.ini:/usr/local/etc/php/conf.d/php.ini
+      - ./omni-app/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      - ./omni-app/www/logs:/var/log/php/
+    networks:
+      - omni-net
+
+  nginx:
+    image: nginx:latest
+    container_name: omni-nginx
+    restart: always
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./omni-app/www:/var/www:cached
+    ports:
+      - ${NGINX_PUBLIC_PORT}
+    networks:
+      - omni-net
+
+networks:
+  omni-net:
+    driver: bridge
