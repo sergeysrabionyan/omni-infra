@@ -59,6 +59,8 @@ services:
     image: nginx:latest
     container_name: omni-nginx
     restart: always
+    depends_on:
+      - omni-app
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./omni-app/www:/var/www:cached
