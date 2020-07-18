@@ -1,6 +1,7 @@
 build: build-omni
 
 PROJECT_NAME_APP := omni-app
+PROJECT_TEST_NAME_APP := omni-app-test
 
 build-omni:
 	cd omni-app && make all
@@ -23,3 +24,27 @@ up:
 down:
 	cd omni-app
 	docker-compose down
+
+unit: test-backend-unit
+test-backend-unit:
+	docker-compose -f docker-compose-testing.yml up -d
+	docker-compose -f docker-compose-testing.yml exec ${PROJECT_TEST_NAME_APP} vendor/bin/phpunit tests/Unit --colors=always
+	docker-compose -f docker-compose-testing.yml down
+
+feature: test-backend-feature
+test-backend-feature:
+	docker-compose -f docker-compose-testing.yml up -d
+	docker-compose -f docker-compose-testing.yml exec ${PROJECT_TEST_NAME_APP} vendor/bin/phpunit tests/Feature --colors=always
+	docker-compose -f docker-compose-testing.yml down
+
+test-all: test-backend-all
+test-backend-all:
+	docker-compose -f docker-compose-testing.yml up -d
+	docker-compose -f docker-compose-testing.yml exec ${PROJECT_TEST_NAME_APP} vendor/bin/phpunit --colors=always
+	docker-compose -f docker-compose-testing.yml down
+
+test-single: test-backend-single
+test-backend-single:
+	docker-compose -f docker-compose-testing.yml up -d
+	docker-compose -f docker-compose-testing.yml exec ${PROJECT_TEST_NAME_APP} vendor/bin/phpunit ${TEST_PATH} --colors=always
+	docker-compose -f docker-compose-testing.yml down

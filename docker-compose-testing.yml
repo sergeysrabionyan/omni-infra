@@ -4,31 +4,29 @@ services:
 
   # Databases #
 
-  omni-db:
+  omni-db-test:
     image: postgres:11
-    container_name: omni-db
+    container_name: omni-db-test
     restart: always
     environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_DB: ${DB_NAME}
-    volumes:
-      - ./volumes/db/omni-db:/var/lib/postgresql/data
+      POSTGRES_PASSWORD: ${DB_PASSWORD_TEST}
+      POSTGRES_USER: ${DB_USER_TEST}
+      POSTGRES_DB: ${DB_NAME_TEST}
     ports:
-      - ${DB_PUBLIC_PORT}
+      - ${DB_PUBLIC_PORT_TEST}
     networks:
-      - omni-net
+      - omni-net-testing
 
   # Backend #
 
-  omni-app:
+  omni-app-test:
     build:
       args:
         user: ${ARG_USER}
         uid: ${ARG_UID}
       context: ./omni-app
       dockerfile: Dockerfile
-    container_name: omni-app
+    container_name: omni-app-test
     restart: always
     environment:
       APP_NAME: ${APP_NAME}
@@ -37,36 +35,24 @@ services:
       APP_KEY: ${APP_KEY}
       APP_DEBUG: ${APP_DEBUG}
       APP_URL: ${APP_URL}
-      DB_CONNECTION: ${DB_CONNECTION}
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      DB_DATABASE: ${DB_NAME}
-      DB_USERNAME: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_CONNECTION: ${DB_CONNECTION_TEST}
+      DB_HOST: ${DB_HOST_TEST}
+      DB_PORT: ${DB_PORT_TEST}
+      DB_DATABASE: ${DB_NAME_TEST}
+      DB_USERNAME: ${DB_USER_TEST}
+      DB_PASSWORD: ${DB_PASSWORD_TEST}
       PHP_IDE_CONFIG: ${PHP_IDE_CONFIG}
       XDEBUG_CONFIG: ${XDEBUG_CONFIG}
     depends_on:
-      - omni-db
+      - omni-db-test
     volumes:
       - ./omni-app/www:/var/www
       - ./omni-app/php.ini:/usr/local/etc/php/conf.d/php.ini
       - ./omni-app/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
       - ./omni-app/www/logs:/var/log/php/
     networks:
-      - omni-net
-
-  nginx:
-    image: nginx:latest
-    container_name: omni-nginx
-    restart: always
-    volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - ./omni-app/www:/var/www:cached
-    ports:
-      - ${NGINX_PUBLIC_PORT}
-    networks:
-      - omni-net
+      - omni-net-testing
 
 networks:
-  omni-net:
+  omni-net-testing:
     driver: bridge
